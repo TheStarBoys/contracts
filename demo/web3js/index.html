@@ -10,7 +10,7 @@
 
 <body>
     <h1>Hello Web3.js demo</h1>
-    <button onclick="submitQueryGroup()">Pay</button>
+    <button onclick="pay()">Pay</button>
 </body>
 <script src="../static/js/web3.min.js"></script>
 <script src="../static/js/soter_abi.js"></script>
@@ -28,7 +28,7 @@
         alert("Please install an Ethereum-compatible browser or extension like MetaMask to use our service!");
     }
 
-    function submitQueryGroup() {
+    function pay() {
         soter_contract = new window.web3.eth.Contract(soter_abi, soter_addr);
 
         // NOTE: all coin unit is Wei.
@@ -74,11 +74,11 @@
         account = ethereum.selectedAddress;
         console.log('account:', account);
 
-        soter_contract.methods.submitQueryGroup(group_uuid, query_for_pay).send({
+        soter_contract.methods.xxx(arg1, arg2).send({
             from: account,
             gas: '210000',
             gasPrice: '100',
-            value: total_amount
+            value: value,
         });
     }
 </script>

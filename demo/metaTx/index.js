@@ -4,7 +4,7 @@ var fs = require('fs');
 http.createServer(function (request, response) {
     fs.readFile('./index.html','utf-8',function(err, data) {
         if(err) throw err;
-        response.writeHead(200, {"Content-Type": "text/html;charset=utf-8"});
+        response.writeHead(200, {'Content-Type': 'text/html; charset=utf8'});
         response.write(data);
         response.end();
     });

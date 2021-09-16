@@ -2,85 +2,48 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web3.js demo</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello MetaTx demo</title>
 </head>
 
 <body>
-    <h1>Hello Web3.js demo</h1>
-    <button onclick="submitQueryGroup()">Pay</button>
+  <h1>Hello MetaTx demo</h1>
+  <button id="enableEthereumButton">Enable Ethereum</button>
+  <h3>Sign Data</h3>
+  <button type="button" id="signDataButton">Sign Data</button>
+  <input id="signData" value="hello" />
 </body>
-<script src="../static/js/web3.min.js"></script>
-<script src="../static/js/soter_abi.js"></script>
 <script>
-    const ethEnabled = () => {
-        if (window.ethereum) {
-            window.web3 = new Web3(window.ethereum);
-            window.ethereum.enable();
-            return true;
-        }
-        return false;
-    }
+  var ethereum
+  if (typeof window.ethereum !== 'undefined') {
+    console.log('MetaMask is installed!');
+    ethereum = window.ethereum
+  }
 
-    if (!ethEnabled()) {
-        alert("Please install an Ethereum-compatible browser or extension like MetaMask to use our service!");
-    }
+  const ethereumButton = window.document.getElementById("enableEthereumButton");
+  const signButton = window.document.getElementById("signDataButton");
 
-    function submitQueryGroup() {
-        soter_contract = new window.web3.eth.Contract(soter_abi, soter_addr);
+  var accounts
+  ethereumButton.addEventListener('click', () => {
+    //Will Start the metamask extension
+    accounts = ethereum.request({
+      method: 'eth_requestAccounts'
+    });
+  });
 
-        // NOTE: all coin unit is Wei.
-        // If not Wei, you must convert to Wei. Example:
-        // web3.utils.toWei('1', 'ether') => 1000000000000000000
-        // It will convert 1 ether to 1000000000000000000 Wei.
-
-        group_uuid = web3.utils.stringToHex('QG_17f001be-364d-4074-981f-4aad83bad007');
-        // query_for_pay = [
-        //     {
-        //         uuid: web3.utils.stringToHex('SQ_2b1c73b8-2256-40f9-8bf3-a2aaa2942003'),
-        //         quote: web3.utils.stringToHex('1000'),
-        //     },
-        //     {
-        //         uuid: web3.utils.stringToHex('SQ_e88a2c83-c401-4347-9596-bbd8e0345003'),
-        //         quote: web3.utils.stringToHex('1000'),
-        //     },
-        //     {
-        //         uuid: web3.utils.stringToHex('SQ_16cf84f2-88be-4cf8-9720-a22879c90003'),
-        //         quote: web3.utils.stringToHex('1000'),
-        //     },
-        // ];
-
-        query_for_pay = [
-            [
-                web3.utils.stringToHex('SQ_2b1c73b8-2256-40f9-8bf3-a2aaa2942007'),
-                '1000', // Wei
-            ],
-            [
-                web3.utils.stringToHex('SQ_e88a2c83-c401-4347-9596-bbd8e0345007'),
-                '1000', // Wei
-            ],
-            [
-                web3.utils.stringToHex('SQ_16cf84f2-88be-4cf8-9720-a22879c90007'),
-                '1000', // Wei
-            ],
-        ];
-
-        // fill actual amount.
-        total_amount = web3.utils.toWei('1', 'ether'); // 1000000000000000000 Wei.
-
-        console.log('query_for_pay: ', query_for_pay);
-        account = ethereum.selectedAddress;
-        console.log('account:', account);
-
-        soter_contract.methods.submitQueryGroup(group_uuid, query_for_pay).send({
-            from: account,
-            gas: '210000',
-            gasPrice: '100',
-            value: total_amount
-        });
-    }
+  signButton.addEventListener('click', () => {
+    signDataInput = window.document.getElementById('signData')
+    const signature = ethereum.request({
+      method: 'personal_sign',
+      params: [
+        ethereum.selectedAddress,
+        signDataInput.value,
+      ],
+    });
+    console.log('signature: ', signature);
+  });
 </script>
 
 </html>

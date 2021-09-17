@@ -9,11 +9,57 @@
 </head>
 
 <body>
-  <h1>Hello MetaTx demo</h1>
-  <button id="enableEthereumButton">Enable Ethereum</button>
-  <h3>Sign Data</h3>
-  <button type="button" id="signDataButton">Sign Data</button>
-  <input id="signData" value="hello" />
+  <div>
+    <h1>Hello MetaTx demo</h1>
+    <button id="enableEthereumButton">Enable Ethereum</button>
+  </div>
+  <div>
+    <h3>Sign Data</h3>
+    <button type="button" id="signDataButton">Sign Data</button>
+    <input id="signData" value="hello" />
+  </div>
+  <div>
+    <h3>Sign Typed Data</h3>
+    input:
+    <div>
+      <span>
+        from<input id="metaTxFrom" value="0x11a449ed8eadacda0a290ad0ffee174fdf0b3f7a" />
+      </span>
+    </div>
+    <div>
+      <span>
+        to<input id="metaTxTo" value="0x11a449ed8eadacda0a290ad0ffee174fdf0b3f7a" />
+      </span>
+    </div>
+    <div>
+      <span>
+        value<input id="metaTxValue" value="0" />
+      </span>
+    </div>
+    <div>
+      <span>
+        gas<input id="metaTxGas" value="100000000" />
+      </span>
+    </div>
+    <div>
+      <span>
+        nonce<input id="metaTxNonce" value="1" />
+      </span>
+    </div>
+    <div>
+      <span>
+        data<input id="metaTxData" value="0xdddddd" />
+      </span>
+    </div>
+    output:
+    <div>
+      <span>
+        signature<input id="metaTxSignature" value="" />
+      </span>
+    </div>
+    <button type="button" id="signTypedDataButton">Sign Typed Data</button>
+  </div>
+
 </body>
 <script>
   var ethereum
@@ -24,6 +70,7 @@
 
   const ethereumButton = window.document.getElementById("enableEthereumButton");
   const signButton = window.document.getElementById("signDataButton");
+  const signTypedButton = window.document.getElementById("signTypedDataButton");
 
   var accounts
   ethereumButton.addEventListener('click', () => {
@@ -44,6 +91,115 @@
     });
     console.log('signature: ', signature);
   });
+
+  signTypedButton.addEventListener('click', function(event) {
+    event.preventDefault();
+    req = {
+      from: window.document.getElementById('metaTxFrom').value,
+      to: window.document.getElementById('metaTxTo').value,
+      value: window.document.getElementById('metaTxValue').value,
+      gas: window.document.getElementById('metaTxGas').value,
+      nonce: window.document.getElementById('metaTxNonce').value,
+      data: window.document.getElementById('metaTxData').value,
+    }
+    // req = {
+    //   from: ethereum.selectedAddress,
+    //   to: ethereum.selectedAddress,
+    //   value: '0',
+    //   gas: '100000000',
+    //   nonce: Number(1),
+    //   data: '0xdddddd',
+    // };
+    signMetaTx(req);
+    // 0xa135191a979d3b916c2af377f82989f957fb3410bdd114f19e0f78de3261c96c65cf330197a217b1d116df8ffcb2cb6a8e7e62ff0e1ebdb9823bf6be6083a2311b
+  });
+</script>
+
+<script type="text/javascript">
+  const signMetaTx = (req) => {
+    const msgParams = JSON.stringify({
+      domain: {
+        // Defining the chain aka Rinkeby testnet or Ethereum Main Net
+        chainId: ethereum.chainId,
+        // Give a user friendly name to the specific contract you are signing for.
+        name: 'MinimalForwarder',
+        // If name isn't enough add verifying contract to make sure you are establishing contracts with the proper entity
+        verifyingContract: '0x471C92F915ae766C4964eEdC300e5b8FF41e443c',
+        // Just let's you know the latest version. Definitely make sure the field name is correct.
+        version: '0.0.1',
+      },
+
+      // Defining the message signing data content.
+      message: req,
+      // Refers to the keys of the *types* object below.
+      primaryType: 'ForwardRequest',
+      types: {
+        // TODO: Clarify if EIP712Domain refers to the domain the contract is hosted on
+        EIP712Domain: [{
+            name: 'name',
+            type: 'string'
+          },
+          {
+            name: 'version',
+            type: 'string'
+          },
+          {
+            name: 'chainId',
+            type: 'uint256'
+          },
+          {
+            name: 'verifyingContract',
+            type: 'address'
+          },
+        ],
+        // Refer to PrimaryType
+        ForwardRequest: [{
+            name: 'from',
+            type: 'address'
+          },
+          {
+            name: 'to',
+            type: 'address'
+          },
+          {
+            name: 'value',
+            type: 'uint256'
+          },
+          {
+            name: 'gas',
+            type: 'uint256'
+          },
+          {
+            name: 'nonce',
+            type: 'uint256'
+          },
+          {
+            name: 'data',
+            type: 'bytes'
+          },
+        ],
+      },
+    });
+
+    var from = ethereum.selectedAddress;
+
+    var params = [from, msgParams];
+    var method = 'eth_signTypedData_v4';
+
+    ethereum
+      .request({
+        method,
+        params,
+        from,
+      })
+      .then((result) => {
+        console.log('TYPED SIGNED:' + JSON.stringify(result));
+        window.document.getElementById('metaTxSignature').value = result;
+      })
+      .catch((err) => {
+        console.error('TYPED SIGNED err:' + JSON.stringify(err));
+      });
+  }
 </script>
 
 </html>

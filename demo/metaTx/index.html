@@ -19,16 +19,20 @@
     <input id="signData" value="hello" />
   </div>
   <div>
+    <h3>Generage `SafeMint` Metatransaction</h3>
+    <button type="button" id="genMintMetaTxButton">Generate SafeMint MetaTx</button>
+  </div>
+  <div>
     <h3>Sign Typed Data</h3>
     input:
     <div>
       <span>
-        from<input id="metaTxFrom" value="0x11a449ed8eadacda0a290ad0ffee174fdf0b3f7a" />
+        from<input id="metaTxFrom" value="0x" />
       </span>
     </div>
     <div>
       <span>
-        to<input id="metaTxTo" value="0x11a449ed8eadacda0a290ad0ffee174fdf0b3f7a" />
+        to<input id="metaTxTo" value="0x" />
       </span>
     </div>
     <div>
@@ -38,17 +42,17 @@
     </div>
     <div>
       <span>
-        gas<input id="metaTxGas" value="100000000" />
+        gas<input id="metaTxGas" value="0" />
       </span>
     </div>
     <div>
       <span>
-        nonce<input id="metaTxNonce" value="1" />
+        nonce<input id="metaTxNonce" value="0" />
       </span>
     </div>
     <div>
       <span>
-        data<input id="metaTxData" value="0xdddddd" />
+        data<input id="metaTxData" value="0x" />
       </span>
     </div>
     output:
@@ -58,29 +62,191 @@
       </span>
     </div>
     <button type="button" id="signTypedDataButton">Sign Typed Data</button>
+    <button type="button" id="executeMetaTxButton">Execute metaTx</button>
   </div>
 
 </body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/3.0.0-rc.5/web3.min.js" integrity="sha512-jRzb6jM5wynT5UHyMW2+SD+yLsYPEU5uftImpzOcVTdu1J7VsynVmiuFTsitsoL5PJVQi+OtWbrpWq/I+kkF4Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
   var ethereum
   if (typeof window.ethereum !== 'undefined') {
-    console.log('MetaMask is installed!');
+    console.log('MetaMask is installed!')
     ethereum = window.ethereum
   }
 
-  const ethereumButton = window.document.getElementById("enableEthereumButton");
-  const signButton = window.document.getElementById("signDataButton");
-  const signTypedButton = window.document.getElementById("signTypedDataButton");
+  const MetaTxABI = [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct MinimalForwarder.ForwardRequest",
+          "name": "req",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes",
+          "name": "signature",
+          "type": "bytes"
+        }
+      ],
+      "name": "execute",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "bytes",
+          "name": "",
+          "type": "bytes"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        }
+      ],
+      "name": "getNonce",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "value",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "gas",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct MinimalForwarder.ForwardRequest",
+          "name": "req",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes",
+          "name": "signature",
+          "type": "bytes"
+        }
+      ],
+      "name": "verify",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+
+  const minimalForwarderAddr = '0xC24b78c1E6FA961B2C6AFD33a3c5b84B0EDC1f8A'
+  const nftAddr = '0x7E6cDc21d391895d159B3D8A52ACb647407EaAf6'
+
+  const ethereumButton = window.document.getElementById("enableEthereumButton")
+  const signButton = window.document.getElementById("signDataButton")
+  const genMintMetaTxButton = window.document.getElementById("genMintMetaTxButton")
+  const signTypedButton = window.document.getElementById("signTypedDataButton")
+  const executeMetaTxButton = window.document.getElementById("executeMetaTxButton")
 
   var accounts
   ethereumButton.addEventListener('click', () => {
+    event.preventDefault()
     //Will Start the metamask extension
     accounts = ethereum.request({
       method: 'eth_requestAccounts'
-    });
-  });
+    }).then(() => {
+      console.log('chainId: ', ethereum.chainId)
+      if (ethereum.chainId != '0x3') {
+        ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x3' }],
+        })
+      }
+    })
+  })
 
   signButton.addEventListener('click', () => {
+    event.preventDefault()
     signDataInput = window.document.getElementById('signData')
     const signature = ethereum.request({
       method: 'personal_sign',
@@ -88,35 +254,77 @@
         ethereum.selectedAddress,
         signDataInput.value,
       ],
-    });
-    console.log('signature: ', signature);
-  });
+    })
+    console.log('signature: ', signature)
+  })
 
-  signTypedButton.addEventListener('click', function(event) {
-    event.preventDefault();
-    req = {
-      from: window.document.getElementById('metaTxFrom').value,
-      to: window.document.getElementById('metaTxTo').value,
-      value: window.document.getElementById('metaTxValue').value,
-      gas: window.document.getElementById('metaTxGas').value,
-      nonce: window.document.getElementById('metaTxNonce').value,
-      data: window.document.getElementById('metaTxData').value,
+  genMintMetaTxButton.addEventListener('click', async () => {
+    event.preventDefault()
+    
+    const req = await genMintNFTMetaTx(minimalForwarderAddr, nftAddr)
+    window.document.getElementById('metaTxFrom').value = req.from
+    window.document.getElementById('metaTxTo').value = req.to
+    window.document.getElementById('metaTxValue').value = req.value
+    window.document.getElementById('metaTxGas').value = req.gas
+    window.document.getElementById('metaTxNonce').value = req.nonce
+    window.document.getElementById('metaTxData').value = req.data
+  })
+
+  signTypedButton.addEventListener('click', (event) => {
+    event.preventDefault()
+    req = getReqFromForm()
+    signMetaTx(req)
+  })
+
+  executeMetaTxButton.addEventListener('click', async (event) => {
+    event.preventDefault()
+    const req = getReqFromForm()
+    const signature = window.document.getElementById('metaTxSignature').value
+    if (await verifyMetaTx(minimalForwarderAddr, req, signature) == false) {
+      alert('meta transaction is invalid!!')
+      return
     }
-    // req = {
-    //   from: ethereum.selectedAddress,
-    //   to: ethereum.selectedAddress,
-    //   value: '0',
-    //   gas: '100000000',
-    //   nonce: Number(1),
-    //   data: '0xdddddd',
-    // };
-    signMetaTx(req);
-    // 0xa135191a979d3b916c2af377f82989f957fb3410bdd114f19e0f78de3261c96c65cf330197a217b1d116df8ffcb2cb6a8e7e62ff0e1ebdb9823bf6be6083a2311b
-  });
+
+    await executeMetaTx(minimalForwarderAddr, req, signature)
+  })
 </script>
 
 <script type="text/javascript">
-  const signMetaTx = (req) => {
+  const genMintNFTMetaTx = async (minimalForwarderAddr, nftAddr) => {
+    var web3 = new Web3(ethereum)
+    const safeMintABI = [
+      {
+      "inputs": [],
+      "name": "safeMint",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+      }
+    ]
+
+    var nftContract = new web3.eth.Contract(safeMintABI, nftAddr)
+    const from = ethereum.selectedAddress
+    const callData = nftContract.methods.safeMint().encodeABI()
+    const gas = await nftContract.methods.safeMint().estimateGas({from: from})
+
+    return {
+      from: from,
+      to: nftAddr,
+      value: '0',
+      gas: gas,
+      nonce: await getMetaTxNonce(minimalForwarderAddr),
+      data: callData,
+    }
+  }
+
+  const getMetaTxNonce = async (minimalForwarderAddr) => {
+    var web3 = new Web3(ethereum)
+
+    var metaTxContract = new web3.eth.Contract(MetaTxABI, minimalForwarderAddr)
+    return await metaTxContract.methods.getNonce(ethereum.selectedAddress).call()
+  }
+
+  const signMetaTx = async (req) => {
     const msgParams = JSON.stringify({
       domain: {
         // Defining the chain aka Rinkeby testnet or Ethereum Main Net
@@ -124,7 +332,7 @@
         // Give a user friendly name to the specific contract you are signing for.
         name: 'MinimalForwarder',
         // If name isn't enough add verifying contract to make sure you are establishing contracts with the proper entity
-        verifyingContract: '0x471C92F915ae766C4964eEdC300e5b8FF41e443c',
+        verifyingContract: minimalForwarderAddr,
         // Just let's you know the latest version. Definitely make sure the field name is correct.
         version: '0.0.1',
       },
@@ -179,26 +387,46 @@
           },
         ],
       },
-    });
+    })
 
-    var from = ethereum.selectedAddress;
+    var from = ethereum.selectedAddress
 
-    var params = [from, msgParams];
-    var method = 'eth_signTypedData_v4';
+    var params = [from, msgParams]
+    var method = 'eth_signTypedData_v4'
 
-    ethereum
+    const signature = await ethereum
       .request({
         method,
         params,
         from,
       })
-      .then((result) => {
-        console.log('TYPED SIGNED:' + JSON.stringify(result));
-        window.document.getElementById('metaTxSignature').value = result;
-      })
-      .catch((err) => {
-        console.error('TYPED SIGNED err:' + JSON.stringify(err));
-      });
+    window.document.getElementById('metaTxSignature').value = signature
+    return signature
+  }
+
+  const verifyMetaTx = async (minimalForwarderAddr, req, signature) => {
+    var web3 = new Web3(ethereum)
+
+    var metaTxContract = new web3.eth.Contract(MetaTxABI, minimalForwarderAddr)
+    return await metaTxContract.methods.verify(req, signature).call()
+  }
+
+  const executeMetaTx = async (minimalForwarderAddr, req, signature) => {
+    var web3 = new Web3(ethereum)
+
+    var metaTxContract = new web3.eth.Contract(MetaTxABI, minimalForwarderAddr)
+    return await metaTxContract.methods.execute(req, signature).send({from: ethereum.selectedAddress})
+  }
+
+  const getReqFromForm = () => {
+    return {
+      from: window.document.getElementById('metaTxFrom').value,
+      to: window.document.getElementById('metaTxTo').value,
+      value: window.document.getElementById('metaTxValue').value,
+      gas: window.document.getElementById('metaTxGas').value,
+      nonce: window.document.getElementById('metaTxNonce').value,
+      data: window.document.getElementById('metaTxData').value,
+    }
   }
 </script>
 

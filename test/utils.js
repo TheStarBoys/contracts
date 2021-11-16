@@ -1,8 +1,12 @@
 const utils = {
     getEventArgsFromTx: (txReceipt, eventName) => {
-        return txReceipt.logs.filter((log) => {
+        let res = txReceipt.logs.filter((log) => {
             return log.event === eventName
-        })[0].args
+        })
+        if (res.length == 0) {
+            return null
+        }
+        return res[0].args
     },
 }
 

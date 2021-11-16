@@ -7,9 +7,9 @@ const {
 } = require('@openzeppelin/test-helpers')
 const testUtils = require('./utils')
 
-const DynamicBlockPhase = artifacts.require('DynamicBlockPhaseMock')
+const DynamicBlockPhase = artifacts.require('DynamicBlockPhaseWithMaxMock')
 
-contract('DynamicBlockPhase', ([dev]) => {
+contract('DynamicBlockPhaseWithMax', ([dev]) => {
     beforeEach(async () => {
         this.phase = await DynamicBlockPhase.new({ from: dev })
         this.startBlock = await time.latestBlock()

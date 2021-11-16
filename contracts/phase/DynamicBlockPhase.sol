@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./Phase.sol";
 
-abstract contract DynamicBlockPhase {
+abstract contract DynamicBlockPhase is Phase {
     using SafeMath for uint256;
 
     event BlockPhaseUpdated(uint256 lastBlock, uint256 phase);
@@ -17,11 +18,9 @@ abstract contract DynamicBlockPhase {
         lastBlock = startBlock;
     }
 
-    /**
-     * @dev need to implement in child contract.
-     * Its range is from 0 to maxBlockPhase, excluding maxBlockPhase.
-     */
-    function maxBlockPhase() public virtual pure returns(uint256);
+    function updatePhase() public override {
+        return updateBlockPhase();
+    }
 
     function updateBlockPhase() public {
         uint256 phaseNum = increasedBlockPhase();
@@ -34,11 +33,7 @@ abstract contract DynamicBlockPhase {
         }
     }
 
-    function increasedBlockPhase() public view returns(uint256) {
-        if (lastBlockPhase >= maxBlockPhase()) {
-            return 0;
-        }
-
+    function increasedBlockPhase() public virtual view returns(uint256) {
         uint256 duration = block.number.sub(lastBlock);
         uint256 curr = lastBlockPhase;
         while (duration > 0 && duration >= blocksGivenPhase(curr)) {
@@ -46,20 +41,15 @@ abstract contract DynamicBlockPhase {
             curr = curr.add(1);
         }
 
-        return curr <= maxBlockPhase() ? curr.sub(lastBlockPhase) : maxBlockPhase().sub(lastBlockPhase);
+        return curr.sub(lastBlockPhase);
     }
 
     function blockPhase() public view returns(uint256) {
         return lastBlockPhase.add(increasedBlockPhase());
     }
 
-    function blocksOfCurrPhase() public view returns(uint256) {
-        uint256 _phase = blockPhase();
-        if (_phase >= maxBlockPhase()) {
-            return 0;
-        }
-
-        return blocksGivenPhase(_phase);
+    function blocksOfCurrPhase() public virtual view returns(uint256) {
+        return blocksGivenPhase(blockPhase());
     }
 
     /**

@@ -10,10 +10,6 @@ abstract contract DynamicBlockPhaseWithMax is PhaseWithMax, DynamicBlockPhase {
 
     constructor() DynamicBlockPhase() {}
 
-    function phase() public override view returns(uint256) {
-        return blockPhase();
-    }
-
     function maxPhase() public override pure returns(uint256) {
         return maxBlockPhase();
     }

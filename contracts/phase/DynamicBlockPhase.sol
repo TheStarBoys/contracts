@@ -18,6 +18,10 @@ abstract contract DynamicBlockPhase is Phase {
         lastBlock = startBlock;
     }
 
+    function phase() public override view returns(uint256) {
+        return blockPhase();
+    }
+
     function updatePhase() public override {
         return updateBlockPhase();
     }

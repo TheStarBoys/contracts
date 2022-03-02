@@ -1,0 +1,8 @@
+{
+  "bsctestnet": {
+    "governance_token": "0x2Bc608411E35e9d1632fFEa5eA1bd50923824289",
+    "timelock": "0xC54D2588407163F7ba97DeB55F8d68F995B12876",
+    "my_governor": "0xe87d8312e5f85F88dcba17cBeE8a2189643461AB",
+    "startBlock": 17210755
+  }
+}

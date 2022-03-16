@@ -1,10 +1,17 @@
 {
+  "scripts": {
+    "compile": "rm -rf build/contracts && truffle compile",
+    "migrate": "yarn compile && truffle migrate",
+    "verify": "truffle run verify"
+  },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.2",
+    "@openzeppelin/contracts": "^4.5.0",
     "@openzeppelin/test-helpers": "^0.5.13",
     "@truffle/hdwallet-provider": "^1.5.1",
     "chai": "^4.3.4",
     "eth-sig-util": "^3.0.1",
-    "ethereumjs-wallet": "^1.0.1"
+    "ethereumjs-wallet": "^1.0.1",
+    "ethers": "^5.5.4",
+    "truffle-plugin-verify": "^0.5.21"
   }
 }

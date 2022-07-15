@@ -90,6 +90,13 @@ module.exports = {
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       gasPrice: 10000000000,  // 10 gwei (in wei) (default: 100 gwei)
     },
+    startchain: {
+      provider: () => new HDWalletProvider(mnemonic, `http://chain.learnvers.org:8545`),
+      network_id: 62888,     // testnet chain id
+      confirmations: 0,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      gasPrice: 10000000000,  // 10 gwei (in wei) (default: 100 gwei)
+    }
   },
 
   // Set default mocha options here, use special reporters etc.

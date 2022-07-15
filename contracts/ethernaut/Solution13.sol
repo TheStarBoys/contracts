@@ -84,7 +84,7 @@ contract Solution13 {
         returns (uint256)
     {
         if (_gasUsed == 0) {
-            _gasUsed = 423;
+            _gasUsed = 423; // for solc 0.8.15
         }
         return 8191 * _fold + _gasUsed;
     }

